@@ -15,7 +15,8 @@ public class Level
 public class FigureGenerator : MonoBehaviour
 {
     [SerializeField] private Transform parent;
-    [SerializeField] private GameObject prefabCube;
+    [SerializeField] private CubeController prefabCube;
+    [SerializeField] private List<Sprite> sprites;
     [SerializeField] private List<Vector3> scales;
     [SerializeField] private Vector3 scale;
 
@@ -24,8 +25,6 @@ public class FigureGenerator : MonoBehaviour
 
     private int number = 0;
     private int cubeNumber = 0;
-
-    public List<GameObject> AllCubes;
 
     private void Awake()
     {
@@ -58,12 +57,14 @@ public class FigureGenerator : MonoBehaviour
 
         for (int i = 0; i < s; i++)
         {
-            GameObject cube = Instantiate(prefabCube);
+            CubeController cube = Instantiate(prefabCube);
 
-            foreach (Text t in cube.GetComponentsInChildren<Text>())
+            if (number >= sprites.Count)
             {
-                t.text = number.ToString();
+                number = 0;
             }
+
+            cube.SetSprite(sprites[number]);
 
             cubeNumber++;
 
@@ -75,9 +76,9 @@ public class FigureGenerator : MonoBehaviour
 
             cube.transform.SetParent(parent);
             cube.transform.localPosition = new Vector3(x, y, z);
-            xCubes.Add(cube);
+            xCubes.Add(cube.gameObject);
 
-            SetOffset(x, y, z, cube);
+            SetOffset(x, y + (yNumber * 0.05f), z + (zNumber * 0.05f), cube.gameObject);
 
             if (xCubes.Count == scale.x)
             {
@@ -99,8 +100,8 @@ public class FigureGenerator : MonoBehaviour
                 xCubes.Clear();
             }
 
-            cubes.Add(cube);
-            AllCubes.Add(cube);
+            cubes.Add(cube.gameObject);
+            FigureController.Instance.AddCube(cube);
         }
 
         Randomize.RandomizeGenerator(ref cubes, scale);
@@ -112,8 +113,8 @@ public class FigureGenerator : MonoBehaviour
     }
     private void SetOffset(float x, float y, float z, GameObject cube)
     {
-        Vector3 offset = xCubes[xCubes.Count - 1].transform.localPosition + xCubes[xCubes.Count - 1].transform.localScale;
-        offset.x = x + (xCubes.Count - 1) * prefabCube.transform.localScale.x;
+        Vector3 offset = new Vector3();
+        offset.x = x + (xCubes.Count - 1) * (prefabCube.transform.localScale.x + 0.05f);
         offset.y = y;
         offset.z = z;
         cube.transform.localPosition = offset;

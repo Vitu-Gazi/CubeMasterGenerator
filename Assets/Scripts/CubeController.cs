@@ -5,27 +5,46 @@ using UnityEngine.UI;
 
 public class CubeController : MonoBehaviour
 {
-    [SerializeField] private Text[] text;
+    [SerializeField] private ParticleSystem particle;
+    [SerializeField] private SpriteRenderer[] sprites;
 
-    public int CubeNumber => System.Convert.ToInt32(text[0].text);
+    private bool canBeChoosed = true;
 
-    public static CubeController choosesCube;
+    public Sprite CubeSprite => sprites[0].sprite;
+
+    public static CubeController choosedCube;
 
     private void OnMouseDown()
     {
-        choosesCube = this;
+        choosedCube = this;
     }
 
     private void OnMouseUpAsButton()
     {
-        if (choosesCube == this)
+        if (choosedCube == this && canBeChoosed)
         {
+            canBeChoosed = false;
+
             CubeInventory.Instance.AddCube(this);
-            choosesCube = null;
+
+            FigureController.Instance.RemoveCube(this);
         }
-        else
+
+        choosedCube = null;
+    }
+
+    public void SetSprite (Sprite newSprite)
+    {
+        foreach (var sprite in sprites)
         {
-            choosesCube = null;
+            sprite.sprite = newSprite;
         }
+    }
+
+    public void ActivateDestroy()
+    {
+        particle.transform.SetParent(null);
+        particle.gameObject.SetActive(true);
+        Destroy(gameObject);
     }
 }
